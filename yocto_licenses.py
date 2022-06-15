@@ -144,12 +144,13 @@ class Licenses:
     def parseManifest(self, manifest):
         self.printHeadline("Parsing manifest file...")
 
-        # get build directory from environment variable
-        self.builddir = os.getenv('BUILDDIR')
+        # get build directory from environment variable if not given via argument
         if self.builddir is None:
-            print("!!! Error: Build directory not set. Init build environment first (run setToolchain)")
-            print("")
-            raise
+            self.builddir = os.getenv('BUILDDIR')
+            if self.builddir is None:
+                print("!!! Error: Build directory not set. Init build environment first (run setToolchain)")
+                print("")
+                raise
 
         # Initialise a package object
         package = Package()
@@ -290,12 +291,14 @@ class Licenses:
                 else:
                     print("  None")
                 print("")
-                print("!!! Error: Not enough license files defined in config or files are non-existent")
-                print("")
                 if conf_object.skip_license_count_check:
+                    print("!!! Warning: Not enough license files defined in config or files are non-existent")
+                    print("")
                     print("!!! ATTENTION: License count mismatch is ignored because 'SkipLicenseCountCheck' is set! MAKE SURE THAT THIS IS WHAT YOU INTENDED TO DO!!!")
                     print("")
                 else:
+                    print("!!! Error: Not enough license files defined in config or files are non-existent")
+                    print("")
                     self.showLicenseFiles(package)
                     print("")
                     raise
@@ -315,7 +318,7 @@ class Licenses:
         # look for   recipeinfo  LICENSE(.*)  LICENSES  README.*   COPYING.*
 
 
-    def generateLicenseJson(self):
+    def generateLicenseJson(self, outfile):
         # generate JSON packages
         self.printHeadline("Generating license JSON file... ({} packages)".format(len(self.packages_filtered)))
         for package in self.packages_filtered:
@@ -365,8 +368,8 @@ class Licenses:
             self.json_packages.append(json_package)
 
         # and write them to output file
-        with open('licenses_linux.json', 'w') as outfile:
-            json.dump(self.json_packages, outfile, cls=JsonPackageEncoder, indent=4)
+        with open(outfile, 'w') as of:
+            json.dump(self.json_packages, of, cls=JsonPackageEncoder, indent=4)
 
         print("Done!")
         print("")
@@ -415,7 +418,8 @@ def main() -> int:
     parser.add_argument("-l", "--licenses", help="Show each license type and which packgages use it", action="store_true")
     parser.add_argument("-r", "--recipes", help="Show each recipe and which packgages it contains", action="store_true")
     parser.add_argument("-p", "--packages", help="Show each package, version and license type", action="store_true")
-    parser.add_argument("-j", "--json", help="Write packages to output file in JSON format ", action="store_true")
+    parser.add_argument("-j", "--json", help="Write packages in JSON format to given output file name", dest='outfile', type=str)
+    parser.add_argument("-b", "--builddir", help="Yocto build directory. If not given script tries to get build directory from environment.", dest='builddir', type=str, required=False)
     args = parser.parse_args()
 
     if not os.path.exists(args.manifest):
@@ -423,6 +427,10 @@ def main() -> int:
         sys.exit()
 
     licenses = Licenses()
+
+    if not args.builddir is None:
+        licenses.builddir = args.builddir
+
     licenses.parseManifest(args.manifest)
 
     if args.licenses:
@@ -431,8 +439,8 @@ def main() -> int:
         licenses.printRecipes()
     elif args.packages:
         licenses.printPackages()
-    elif args.json:
-        licenses.generateLicenseJson()
+    elif not args.outfile is None:
+        licenses.generateLicenseJson(args.outfile)
 
     return 0
 

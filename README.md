@@ -4,17 +4,22 @@ A Python script to parse the license.manifest file from a Yocto build and displa
 
 ## Usage
 ```bash
-usage: yocto_licenses.py [-h] [-l] [-r] [-p] [-j] manifest
+usage: yocto_licenses.py [-h] [-l] [-r] [-p] [-j] manifest 
 
 positional arguments:
   manifest        Path to the licence.manifest file
 
 optional arguments:
-  -h, --help      Show this help message and exit
-  -l, --licenses  Show each license type and which packgages use it
-  -r, --recipes   Show each recipe and which packgages it contains
-  -p, --packages  Show each package, version and license type
-  -j, --json      Write packages to output file in JSON format
+  -h, --help            show this help message and exit
+  -l, --licenses        Show each license type and which packgages use it
+  -r, --recipes         Show each recipe and which packgages it contains
+  -p, --packages        Show each package, version and license type
+  -j OUTFILE, --json OUTFILE
+                        Write packages in JSON format to given output file
+                        name
+  -b BUILDDIR, --builddir BUILDDIR
+                        Yocto build directory. If not given script tries to
+                        get build directory from environment.
 ```
 
 ## Licenses
