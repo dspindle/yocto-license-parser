@@ -1,19 +1,20 @@
 # Yocto License Manifest Parser
 
-A Python script to parse the license.manifest file from a Yocto build and display the data in a more usage format.
+A Python script to parse the license.manifest file from a Yocto build and display the data in a more usable format.
 
 ## Usage
 ```bash
-usage: yocto_licenses.py [-h] [-l] [-p] [-c] manifest
+usage: yocto_licenses.py [-h] [-l] [-r] [-p] [-j] manifest
 
 positional arguments:
   manifest        Path to the licence.manifest file
 
 optional arguments:
-  -h, --help      show this help message and exit
-  -l, --licenses  Show each licence type and which packgages use it
+  -h, --help      Show this help message and exit
+  -l, --licenses  Show each license type and which packgages use it
+  -r, --recipes   Show each recipe and which packgages it contains
   -p, --packages  Show each package, version and license type
-  -c, --csv       Display the output as CSV
+  -j, --json      Write packages to output file in JSON format
 ```
 
 ## Licenses
