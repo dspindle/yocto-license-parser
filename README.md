@@ -20,6 +20,9 @@ optional arguments:
   -b BUILDDIR, --builddir BUILDDIR
                         Yocto build directory. If not given script tries to
                         get build directory from environment.
+  -c CONFFILE, --config CONFFILE
+                        Config file path. If not given script uses default
+                        file within build directory.
 ```
 
 ## Licenses

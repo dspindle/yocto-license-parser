@@ -56,17 +56,23 @@ class Licenses:
         self.packages = [] # list
         self.packages_filtered = [] # list
         self.json_packages = [] # list
+        self.config_file = None
         self.config = None
         self.builddir = None
 
     def initConfig(self):
+        if self.config_file is None:
+            # use default config file in build-dir if no config file path was given
+            self.config_file = os.path.join(self.builddir, "license-parser.ini")
         if self.config is None:
             self.config = configparser.ConfigParser()
-            self.config.read(os.path.join(self.builddir, "license-parser.ini"))
+            self.config.read(self.config_file)
+
 
     def readConfigFile(self, package):
         self.initConfig()
-        self.config.read(os.path.join(self.builddir, "license-parser.ini"))
+        self.config.read(self.config_file)
+
         section_name = ConfigObject.packageToSectionName(package)
         if section_name in self.config:
             section = self.config[section_name]
@@ -93,7 +99,7 @@ class Licenses:
         self.config[config_object.section_name]['AdditionalFiles'] = json.dumps(config_object.additional_files)
         self.config[config_object.section_name]['SkipLicenseCountCheck'] = config_object.skip_license_count_check
 
-        with open('license-parser.ini', 'w') as configfile:
+        with open(self.config_file, 'w') as configfile:
             self.config.write(configfile)
 
     def printHeadline(self, text):
@@ -419,7 +425,13 @@ def main() -> int:
     parser.add_argument("-r", "--recipes", help="Show each recipe and which packgages it contains", action="store_true")
     parser.add_argument("-p", "--packages", help="Show each package, version and license type", action="store_true")
     parser.add_argument("-j", "--json", help="Write packages in JSON format to given output file name", dest='outfile', type=str)
-    parser.add_argument("-b", "--builddir", help="Yocto build directory. If not given script tries to get build directory from environment.", dest='builddir', type=str, required=False)
+    parser.add_argument("-b", "--builddir", \
+        help="Yocto build directory. If not given script tries to get build directory from environment.", \
+        dest='builddir', type=str, required=False)
+    parser.add_argument("-c", "--config", \
+        help="Config file path. If not given script uses default file within build directory.", \
+        dest='conffile', type=str, required=False)
+
     args = parser.parse_args()
 
     if not os.path.exists(args.manifest):
@@ -430,6 +442,8 @@ def main() -> int:
 
     if not args.builddir is None:
         licenses.builddir = args.builddir
+    if not args.conffile is None:
+        licenses.config_file = args.conffile
 
     licenses.parseManifest(args.manifest)
 
