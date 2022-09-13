@@ -97,7 +97,7 @@ class Licenses:
         self.config[config_object.section_name]['ChosenLicense'] = config_object.chosen_license if config_object.chosen_license is not None else ""
         self.config[config_object.section_name]['LicenseFiles'] = json.dumps(config_object.license_files)
         self.config[config_object.section_name]['AdditionalFiles'] = json.dumps(config_object.additional_files)
-        self.config[config_object.section_name]['SkipLicenseCountCheck'] = config_object.skip_license_count_check
+        self.config[config_object.section_name]['SkipLicenseCountCheck'] = "yes" if config_object.skip_license_count_check else "no"
 
         with open(self.config_file, 'w') as configfile:
             self.config.write(configfile)
