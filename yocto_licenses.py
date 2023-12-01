@@ -59,6 +59,7 @@ class Licenses:
         self.config_file = None
         self.config = None
         self.builddir = None
+        self.tmpdir = None
 
     def initConfig(self):
         if self.config_file is None:
@@ -155,6 +156,14 @@ class Licenses:
             self.builddir = os.getenv('BUILDDIR')
             if self.builddir is None:
                 print("!!! Error: Build directory not set. Init build environment first (run setToolchain)")
+                print("")
+                raise
+
+        # get tmp directory from environment variable if not given via argument
+        if self.tmpdir is None:
+            self.tmpdir = os.getenv('TMPDIR')
+            if self.tmpdir is None:
+                print("!!! Error: TMP directory not set. Init build environment first (run setToolchain)")
                 print("")
                 raise
 
@@ -286,7 +295,7 @@ class Licenses:
             
             # sanity check. number of license files in config-file must match the number of licenses
             num_lic_files_in_config = len(conf_object.license_files) if not conf_object.license_files is None else 0
-            if (len(package.licenses) > num_lic_files_in_config) or ((num_lic_files_in_config > 0) and not all(os.path.isfile(os.path.join(self.builddir, lfp)) for lfp in conf_object.license_files)):
+            if (len(package.licenses) > num_lic_files_in_config) or ((num_lic_files_in_config > 0) and not all(os.path.isfile(os.path.join(self.tmpdir, lfp)) for lfp in conf_object.license_files)):
                 print("Package: {}".format(package.package_name))
                 print("----------------------------------------")              
                 print("")
@@ -311,7 +320,7 @@ class Licenses:
         
     
     def showLicenseFiles(self, package):
-        lic_dir_path = os.path.join(self.builddir, "tmp/deploy/licenses/", package.recipe_name)
+        lic_dir_path = os.path.join(self.tmpdir, "deploy/licenses/", package.recipe_name)
         print("Package licenses: ")
         for i, l in enumerate(package.licenses):
             print("  {}: {}".format(i, l))
@@ -347,7 +356,7 @@ class Licenses:
 
             if not conf_object.additional_files is None:
                 for add_file_entry in conf_object.additional_files:
-                    add_file_path = os.path.join(self.builddir, add_file_entry)
+                    add_file_path = os.path.join(self.tmpdir, add_file_entry)
                     with open(add_file_path, 'r') as add_file:
                         add_file_content = add_file.read()
                         lic_text += add_file_content
@@ -359,7 +368,7 @@ class Licenses:
 
             if not conf_object.license_files is None:
                 for lic_file_entry in conf_object.license_files:
-                    lic_file_path = os.path.join(self.builddir, lic_file_entry)
+                    lic_file_path = os.path.join(self.tmpdir, lic_file_entry)
                     with open(lic_file_path, 'r') as lic_file:
                         lic_file_content = lic_file.read()
                         lic_text += lic_file_content
@@ -428,6 +437,9 @@ def main() -> int:
     parser.add_argument("-b", "--builddir", \
         help="Yocto build directory. If not given script tries to get build directory from environment.", \
         dest='builddir', type=str, required=False)
+    parser.add_argument("-t", "--tmpdir", \
+        help="Yocto tmp directory. If not given script tries to get tmp directory from environment.", \
+        dest='tmpdir', type=str, required=False)
     parser.add_argument("-c", "--config", \
         help="Config file path. If not given script uses default file within build directory.", \
         dest='conffile', type=str, required=False)
@@ -442,6 +454,8 @@ def main() -> int:
 
     if not args.builddir is None:
         licenses.builddir = args.builddir
+    if not args.tmpdir is None:
+        licenses.tmpdir = args.tmpdir
     if not args.conffile is None:
         licenses.config_file = args.conffile
 
