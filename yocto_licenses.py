@@ -316,7 +316,7 @@ class Licenses:
                     print("")
                     self.showLicenseFiles(package)
                     print("")
-                    raise
+                    raise Exception(f"Not enough license files defined in config or files are non-existent for package '{package.package_name}'! (Used config file: {self.config_file})")
         
     
     def showLicenseFiles(self, package):
